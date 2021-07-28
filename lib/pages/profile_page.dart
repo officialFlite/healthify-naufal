@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:healthify_testing/dataBadan.dart';
+import 'package:healthify_testing/pages/data_history.dart';
 import 'package:healthify_testing/pages/google_sign_in/sign_in.dart';
-
+import 'package:intl/intl.dart';
 import 'google_sign_in/sign_in_google.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -11,6 +12,8 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  DateTime now = DateTime.now();
+
   String logbadan = 'logBadan';
   String selected;
   String selected1;
@@ -40,6 +43,11 @@ class _ProfilePageState extends State<ProfilePage> {
       .reference()
       .child('dataBadan')
       .child('dataHitunganKalori');
+
+  DatabaseReference uploadHitunganIMT = FirebaseDatabase.instance
+      .reference()
+      .child('dataBadan')
+      .child('dataHitunganIMT');
 
   DatabaseReference uploadRiwayatProfil = FirebaseDatabase.instance
       .reference()
@@ -76,6 +84,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   double hitunganKalori;
+  double hitunganIMT;
   double activityValue;
 
   void uploadHitunganKaloriVoid(DataBadan _dataBadan) async {
@@ -84,14 +93,32 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
+  void uploadHitunganIMTVoid(DataBadan _dataBadan) async {
+    uploadHitunganIMT.update({
+      'hitunganIMT': hitunganIMT,
+    });
+  }
+
   void uploadRiwayatKalori(DataBadan _dataBadan) async {
-    uploadRiwayatProfil.push().set({
+    String formattedDate = DateFormat('dd-MM-yyyy').format(now);
+    String uploadTime = DateFormat('kk:mm:s').format(now);
+    String uploadDay = DateFormat('EEEE').format(now);
+
+    var value = {
+      'hari': uploadDay,
+      'jam': uploadTime,
+      'tanggal': formattedDate,
+      'usernameSaved': user.displayName,
       'beratBadan': double.parse(weightController.text),
       'jenisKelamin': selected,
       'kalori': hitunganKalori,
       'tinggiBadan': double.parse(heightController.text),
       'umur': double.parse(ageController.text),
-    });
+      'imt': hitunganIMT,
+    };
+    uploadRiwayatProfil.push().set(
+          value,
+        );
   }
 
   void activityRateCalc() {
@@ -108,6 +135,13 @@ class _ProfilePageState extends State<ProfilePage> {
     } else {
       activityValue = 666;
     }
+  }
+
+  void kalkulasiIndeksMassaTubuh(DataBadan _dataBadan) {
+    hitunganIMT = double.parse(weightController.text) /
+        ((double.parse(heightController.text) / 100) *
+            (double.parse(heightController.text) / 100));
+    uploadHitunganIMTVoid(_dataBadan);
   }
 
   void kalkulasiKalori(DataBadan _dataBadan) {
@@ -132,12 +166,42 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  void handleClick(String value) async {
+    switch (value) {
+      case 'Sign Out':
+        await AuthProviderService.instance.logOut();
+        Navigator.of(context).pop();
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SignIn(),
+          ),
+          ModalRoute.withName("/loginpage"),
+        );
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text('Healthify'),
         backgroundColor: Color.fromARGB(255, 178, 34, 34),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: handleClick,
+            itemBuilder: (BuildContext context) {
+              return {'Sign Out'}.map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(choice),
+                );
+              }).toList();
+            },
+          ),
+        ],
       ),
       body: StreamBuilder(
         stream: databaseReference.onValue,
@@ -157,6 +221,113 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
+  var user = AuthProviderService.instance.user;
+
+  Widget userShow() {
+    return Container(
+      width: double.infinity,
+      margin: EdgeInsets.all(10),
+      padding: EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Colors.orange[400],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black54,
+            offset: Offset(4.0, 4.0), //(x,y)
+            blurRadius: 5.0,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Hi there!',
+            style: TextStyle(
+              fontSize: 20,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  offset: Offset(4, 4),
+                  blurRadius: 3.0,
+                ),
+              ],
+            ),
+            child: Text(
+              user.displayName,
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
+          Container(
+            height: 100,
+            width: 100,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(300),
+              image: DecorationImage(
+                image: NetworkImage(user.photoURL),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            "UID : ",
+            style: TextStyle(
+              fontSize: 20,
+              fontStyle: FontStyle.italic,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 5),
+          Container(
+            padding: EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  offset: Offset(4, 4),
+                  blurRadius: 3.0,
+                ),
+              ],
+            ),
+            child: Text(
+              user.uid,
+              style: TextStyle(
+                fontSize: 18,
+                fontStyle: FontStyle.italic,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
+          Text(
+            'Ready to begin some workout?',
+            style: TextStyle(
+              fontSize: 20,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          SizedBox(height: 10),
+        ],
+      ),
+    );
+  }
+
   Widget tampilData(DataBadan _dataBadan) {
     return GestureDetector(
       onTap: () {
@@ -168,15 +339,16 @@ class _ProfilePageState extends State<ProfilePage> {
       },
       child: Scaffold(
         body: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
           child: Column(
             children: [
+              userShow(),
               Container(
                 width: double.infinity,
-                margin: EdgeInsets.all(7),
-                padding: EdgeInsets.all(15),
+                margin: EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  color: Color.fromARGB(255, 255, 255, 224),
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.cyan[50],
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black54,
@@ -189,6 +361,28 @@ class _ProfilePageState extends State<ProfilePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
+                    Container(
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 45, 50, 67),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(10),
+                          topRight: Radius.circular(10),
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Calculator",
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
                     Text(
                       "Body Weight (Kg)",
                       style: TextStyle(
@@ -495,7 +689,53 @@ class _ProfilePageState extends State<ProfilePage> {
                             child: Padding(
                               padding: const EdgeInsets.all(5),
                               child: Text(
-                                'Calculate',
+                                'Calculate Cal',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          width: 150,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            color: Colors.greenAccent,
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(color: Colors.grey),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black26,
+                                offset: Offset(3, 3),
+                                blurRadius: 4.0,
+                              ),
+                            ],
+                          ),
+                          child: TextButton(
+                            style: TextButton.styleFrom(
+                              alignment: Alignment.center,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                            ),
+                            onPressed: () {
+                              kalkulasiIndeksMassaTubuh(_dataBadan);
+                              FocusScopeNode currentFocus =
+                                  FocusScope.of(context);
+
+                              if (!currentFocus.hasPrimaryFocus) {
+                                currentFocus.unfocus();
+                              }
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(5),
+                              child: Text(
+                                'Calculate IMT',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 18,
@@ -510,36 +750,80 @@ class _ProfilePageState extends State<ProfilePage> {
                       ],
                     ),
                     SizedBox(height: 10),
-                    Text(
-                      "Your Calorie is",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Container(
-                      width: 150,
-                      height: 45,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black26,
-                            offset: Offset(3, 3),
-                            blurRadius: 4.0,
-                          ),
-                        ],
-                        border: Border.all(color: Colors.grey),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(hitunganKalori.toString()),
-                        ],
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        Column(
+                          children: [
+                            Text(
+                              "Your Calorie is",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Container(
+                              width: 150,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    offset: Offset(3, 3),
+                                    blurRadius: 4.0,
+                                  ),
+                                ],
+                                border: Border.all(color: Colors.grey),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(hitunganKalori.toString()),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text(
+                              "Your IMT is",
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Container(
+                              width: 150,
+                              height: 45,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(5),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    offset: Offset(3, 3),
+                                    blurRadius: 4.0,
+                                  ),
+                                ],
+                                border: Border.all(color: Colors.grey),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(hitunganIMT.toString()),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                     SizedBox(height: 15),
                     Container(
@@ -587,62 +871,56 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                       ),
                     ),
+                    SizedBox(height: 10),
+                    Container(
+                      width: 150,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.greenAccent,
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: Colors.grey),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black26,
+                            offset: Offset(3, 3),
+                            blurRadius: 4.0,
+                          ),
+                        ],
+                      ),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          alignment: Alignment.center,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DataHistory(),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(5),
+                          child: Text(
+                            'Data History',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     SizedBox(height: 20),
                   ],
                 ),
               ),
-              SizedBox(height: 10),
-              Container(
-                width: 100,
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black45,
-                      offset: Offset(4, 4),
-                      blurRadius: 4.0,
-                    ),
-                  ],
-                ),
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  onPressed: () async {
-                    await AuthProviderService.instance.logOut();
-                    Navigator.of(context).pop();
-                    Navigator.pushAndRemoveUntil(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SignIn(),
-                      ),
-                      ModalRoute.withName("/loginpage"),
-                    );
-                  },
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.exit_to_app,
-                        color: Colors.black,
-                      ),
-                      Text(
-                        "Log out",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              SizedBox(height: 15),
             ],
           ),
         ),

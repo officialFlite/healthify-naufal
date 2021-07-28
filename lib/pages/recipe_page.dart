@@ -16,6 +16,7 @@ class _RecipePageState extends State<RecipePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Healthify'),
+        automaticallyImplyLeading: false,
         backgroundColor: Color.fromARGB(255, 178, 34, 34),
       ),
       body: Container(
@@ -32,6 +33,7 @@ class _RecipePageState extends State<RecipePage> {
         width: double.infinity,
         padding: EdgeInsets.all(13),
         child: SingleChildScrollView(
+          physics: BouncingScrollPhysics(),
           child: Column(
             children: [
               Container(

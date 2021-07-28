@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:healthify_testing/pages/google_sign_in/sign_in_google.dart';
 import 'package:healthify_testing/pages/workout_cat/easy_work.dart';
 import 'package:healthify_testing/widgets/revised_button.dart';
+
+import 'google_sign_in/sign_in.dart';
 
 class MainPage extends StatefulWidget {
   @override
@@ -8,11 +11,28 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
+  void handleClick(String value) async {
+    switch (value) {
+      case 'Sign Out':
+        await AuthProviderService.instance.logOut();
+        Navigator.of(context).pop();
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SignIn(),
+          ),
+          ModalRoute.withName("/loginpage"),
+        );
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Healthify'),
+        automaticallyImplyLeading: false,
         backgroundColor: Color.fromARGB(255, 178, 34, 34),
       ),
       body: Container(
@@ -89,7 +109,14 @@ class _MainPageState extends State<MainPage> {
                 descText: 'For those beginners',
                 color: Color.fromARGB(255, 55, 60, 77),
                 textColor: Colors.white,
-                press: () {},
+                press: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EasyWork(),
+                    ),
+                  );
+                },
               ),
               RevisedButton(
                 boxImage: AssetImage("assets/images/muscle.png"),
@@ -97,7 +124,14 @@ class _MainPageState extends State<MainPage> {
                 descText: 'For those beginners',
                 color: Color.fromARGB(255, 55, 60, 77),
                 textColor: Colors.white,
-                press: () {},
+                press: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EasyWork(),
+                    ),
+                  );
+                },
               ),
             ],
           ),

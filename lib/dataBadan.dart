@@ -1,6 +1,6 @@
 class DataBadan {
-  final double beratBadan, tinggiBadan, umur, kalori, hitunganKalori;
-  final String jenisKelamin;
+  final double beratBadan, tinggiBadan, umur, kalori, hitunganKalori, imt;
+  final String jenisKelamin, hari, tanggal, jam, usernameSaved;
 
   DataBadan({
     this.beratBadan,
@@ -9,6 +9,11 @@ class DataBadan {
     this.jenisKelamin,
     this.kalori,
     this.hitunganKalori,
+    this.imt,
+    this.hari,
+    this.tanggal,
+    this.jam,
+    this.usernameSaved,
   });
 
   factory DataBadan.fromJson(Map<dynamic, dynamic> json) {
@@ -27,6 +32,11 @@ class DataBadan {
       jenisKelamin: (json['jenisKelamin']),
       kalori: parser(json['kalori']),
       hitunganKalori: parser(json['hitunganKalori']),
+      imt: parser(json['imt']),
+      hari: (json['hari']),
+      tanggal: (json['tanggal']),
+      jam: (json['jam']),
+      usernameSaved: (json['usernameSaved']),
     );
   }
 }
