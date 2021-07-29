@@ -17,6 +17,11 @@ class _ProfilePageState extends State<ProfilePage> {
   String logbadan = 'logBadan';
   String selected;
   String selected1;
+  String statusIMT = 'none';
+
+  double hitunganKalori;
+  double hitunganIMT;
+  double activityValue;
 
   List<String> data = [
     "Male",
@@ -63,6 +68,34 @@ class _ProfilePageState extends State<ProfilePage> {
 
   double weightCont;
 
+  showAlertDialog(BuildContext context) {
+    Widget okButton = TextButton(
+      child: Text("OK"),
+      onPressed: () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text("Alert"),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      insetPadding: EdgeInsets.all(10),
+      content: Text("Data Saved on Database"),
+      actions: [
+        okButton,
+      ],
+    );
+
+    // show the dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+  }
+
   @override
   void dispose() {
     weightController.dispose();
@@ -83,10 +116,6 @@ class _ProfilePageState extends State<ProfilePage> {
     activitiesController.clear();
   }
 
-  double hitunganKalori;
-  double hitunganIMT;
-  double activityValue;
-
   void uploadHitunganKaloriVoid(DataBadan _dataBadan) async {
     uploadHitunganKalori.update({
       'hitunganKalori': hitunganKalori,
@@ -96,6 +125,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void uploadHitunganIMTVoid(DataBadan _dataBadan) async {
     uploadHitunganIMT.update({
       'hitunganIMT': hitunganIMT,
+      'statusIMT': statusIMT,
     });
   }
 
@@ -115,6 +145,7 @@ class _ProfilePageState extends State<ProfilePage> {
       'tinggiBadan': double.parse(heightController.text),
       'umur': double.parse(ageController.text),
       'imt': hitunganIMT,
+      'statusIMT': statusIMT,
     };
     uploadRiwayatProfil.push().set(
           value,
@@ -141,6 +172,18 @@ class _ProfilePageState extends State<ProfilePage> {
     hitunganIMT = double.parse(weightController.text) /
         ((double.parse(heightController.text) / 100) *
             (double.parse(heightController.text) / 100));
+
+    if (hitunganIMT < 18.5) {
+      statusIMT = "Less";
+    } else if (hitunganIMT >= 18.5 && hitunganIMT < 25) {
+      statusIMT = "Ideal";
+    } else if (hitunganIMT >= 25 && hitunganIMT < 30) {
+      statusIMT = "Excessive";
+    } else if (hitunganIMT >= 30 && hitunganIMT < 40) {
+      statusIMT = "Fat";
+    } else {
+      statusIMT = "Obesity";
+    }
     uploadHitunganIMTVoid(_dataBadan);
   }
 
@@ -765,7 +808,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             SizedBox(height: 5),
                             Container(
-                              width: 150,
+                              width: 170,
                               height: 45,
                               decoration: BoxDecoration(
                                 color: Colors.grey[100],
@@ -800,7 +843,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             ),
                             SizedBox(height: 5),
                             Container(
-                              width: 150,
+                              width: 170,
                               height: 45,
                               decoration: BoxDecoration(
                                 color: Colors.grey[100],
@@ -817,7 +860,26 @@ class _ProfilePageState extends State<ProfilePage> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(hitunganIMT.toString()),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        statusIMT,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w700),
+                                      ),
+                                      Text(
+                                        ' at',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.w400),
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    hitunganIMT.toString(),
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w700),
+                                  ),
                                 ],
                               ),
                             ),
@@ -849,12 +911,8 @@ class _ProfilePageState extends State<ProfilePage> {
                           ),
                         ),
                         onPressed: () {
+                          showAlertDialog(context);
                           uploadRiwayatKalori(_dataBadan);
-                          FocusScopeNode currentFocus = FocusScope.of(context);
-
-                          if (!currentFocus.hasPrimaryFocus) {
-                            currentFocus.unfocus();
-                          }
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(5),

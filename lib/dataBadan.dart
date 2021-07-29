@@ -1,6 +1,6 @@
 class DataBadan {
   final double beratBadan, tinggiBadan, umur, kalori, hitunganKalori, imt;
-  final String jenisKelamin, hari, tanggal, jam, usernameSaved;
+  final String jenisKelamin, hari, tanggal, jam, usernameSaved, statusIMT;
 
   DataBadan({
     this.beratBadan,
@@ -14,6 +14,7 @@ class DataBadan {
     this.tanggal,
     this.jam,
     this.usernameSaved,
+    this.statusIMT,
   });
 
   factory DataBadan.fromJson(Map<dynamic, dynamic> json) {
@@ -37,6 +38,7 @@ class DataBadan {
       tanggal: (json['tanggal']),
       jam: (json['jam']),
       usernameSaved: (json['usernameSaved']),
+      statusIMT: (json['statusIMT']),
     );
   }
 }

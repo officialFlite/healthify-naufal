@@ -144,7 +144,7 @@ class _DataHistoryState extends State<DataHistory> {
                             Row(
                               children: [
                                 Icon(
-                                  Icons.healing_rounded,
+                                  Icons.wc_rounded,
                                   color: Colors.black,
                                   size: 20,
                                 ),
@@ -173,7 +173,7 @@ class _DataHistoryState extends State<DataHistory> {
                             Row(
                               children: [
                                 Icon(
-                                  Icons.device_thermostat,
+                                  Icons.cake_rounded,
                                   color: Colors.black,
                                   size: 20,
                                 ),
@@ -200,7 +200,7 @@ class _DataHistoryState extends State<DataHistory> {
                             Row(
                               children: [
                                 Icon(
-                                  Icons.waves_rounded,
+                                  Icons.height_rounded,
                                   color: Colors.black,
                                   size: 20,
                                 ),
@@ -229,7 +229,7 @@ class _DataHistoryState extends State<DataHistory> {
                             Row(
                               children: [
                                 Icon(
-                                  Icons.access_alarm,
+                                  Icons.speed_rounded,
                                   color: Colors.black,
                                   size: 20,
                                 ),
@@ -262,7 +262,7 @@ class _DataHistoryState extends State<DataHistory> {
                             Row(
                               children: [
                                 Icon(
-                                  Icons.opacity_rounded,
+                                  Icons.whatshot_rounded,
                                   color: Colors.black,
                                   size: 20,
                                 ),
@@ -278,6 +278,64 @@ class _DataHistoryState extends State<DataHistory> {
                                 ),
                                 Text(
                                   dataBadan['kalori'].toString(),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[850],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.equalizer_rounded,
+                                  color: Colors.black,
+                                  size: 20,
+                                ),
+                                SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  "IMT Value :",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  dataBadan['imt'].toString(),
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[850],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 10,
+                            ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.accessibility_new_rounded,
+                                  color: Colors.black,
+                                  size: 20,
+                                ),
+                                SizedBox(
+                                  width: 6,
+                                ),
+                                Text(
+                                  "IMT Category :",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  dataBadan['statusIMT'],
                                   style: TextStyle(
                                     fontSize: 16,
                                     color: Colors.grey[850],
